@@ -4,7 +4,7 @@
 # 동일한 이름의 폴더가 있다면 재귀적으로 병합하고, 동일한 이름의 파일이 있다면
 # 둘 중 하나의 이름에 (1)을 붙여서 병합합니다.
 
-# 예제 폴더 구조
+# 예제 폴더 구조:
 # 초기 폴더 구조:
 # /target_folder
 #     /folder1
@@ -31,7 +31,7 @@
 #         fileC.txt
 #         fileE.txt
 
-# 사용법: merge_folders.sh /path/to/target_folder
+# 사용법: unwrap_folders.sh /path/to/target_folder
 
 target_folder="$1"
 
@@ -70,9 +70,11 @@ move_items() {
         if [ -d "$item" ]; then
             # 디렉토리인 경우, 대상 폴더에 동일한 이름의 디렉토리가 있으면 재귀적으로 병합
             if [ -d "$dest_folder/$item_name" ]; then
+                echo "Merging directory: $item into $dest_folder/$item_name"
                 move_items "$item" "$dest_folder/$item_name"
                 rmdir "$item"
             else
+                echo "Moving directory: $item to $dest_folder/"
                 mv "$item" "$dest_folder/"
             fi
         elif [ -f "$item" ]; then
@@ -81,8 +83,10 @@ move_items() {
             ext="${item_name##*.}"
             if [ -f "$dest_folder/$item_name" ]; then
                 new_name=$(generate_unique_filename "$dest_folder" "$base_name" "$ext")
+                echo "File exists: $item_name, renaming and moving to $new_name"
                 mv "$item" "$dest_folder/$new_name"
             else
+                echo "Moving file: $item to $dest_folder/"
                 mv "$item" "$dest_folder/"
             fi
         fi
@@ -92,6 +96,7 @@ move_items() {
 # 대상 폴더의 각 하위 폴더에서 항목을 이동
 for folder in "$target_folder"/*/; do
     [ -d "$folder" ] || continue
+    echo "Processing folder: $folder"
     move_items "$folder" "$target_folder"
     rmdir "$folder"
 done
