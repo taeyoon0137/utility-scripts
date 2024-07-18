@@ -2,6 +2,7 @@
 
 # 이 스크립트는 주어진 경로의 폴더를 재귀적으로 탐색하며 빈 폴더를 모두 삭제합니다.
 # 자식 폴더가 모두 비워져 삭제된 후, 자신도 비어있다면 자신 또한 삭제됩니다.
+# 단, *.app 폴더는 지우지 않습니다.
 
 # 예제 폴더 구조:
 # 초기 폴더 구조:
@@ -17,12 +18,18 @@
 #         /subfolder3
 #             /subfolder4
 #                 (empty)
+#     /example.app
+#         /Contents
+#             (some files)
 #
 # 결과 폴더 구조:
 # /target_folder
 #     /folder2
 #         /subfolder2
 #             file.txt
+#     /example.app
+#         /Contents
+#             (some files)
 
 # 사용법: clean_empty_folders.sh /path/to/target_folder
 
@@ -37,6 +44,14 @@ fi
 delete_empty_folders() {
     local folder="$1"
     local is_empty=1
+
+    # .app 폴더는 무시
+    if [[ "$folder" == *.app ]]; then
+        echo "Skipping .app folder: $folder"
+        return
+    fi
+
+    echo "Checking folder: $folder"
 
     # 하위 폴더를 먼저 탐색
     for subfolder in "$folder"/*/; do
@@ -53,6 +68,8 @@ delete_empty_folders() {
     if [ $is_empty -eq 1 ]; then
         rmdir "$folder"
         echo "Deleted empty folder: $folder"
+    else
+        echo "Folder is not empty: $folder"
     fi
 }
 
